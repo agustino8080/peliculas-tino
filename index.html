@@ -415,6 +415,7 @@
           <select id="selectTest" style="border: 2px solid #4ade80;">
             <option value="">-- Selecciona un test --</option>
             <option value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">M3U8: Stream de Prueba (Big Buck Bunny)</option>
+            <option value="https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8/f08e80da-bf1d-4e3d-8899-f0f6155f6efa_video_180_250000_primary_audio_1.ts">TS: Segmento de Video de Prueba</option>
             <option value="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">MP4: Película de Prueba (Bunny)</option>
             <option value="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">MP4: Cortometraje Elephants Dream</option>
           </select>
@@ -597,10 +598,11 @@ function loadDirectVideo(url, labelText) {
   const video = currentVideoEl;
   const lowerUrl = url.toLowerCase();
   const isM3U8 = lowerUrl.includes(".m3u8") || lowerUrl.includes("m3u8");
+  const isTS = lowerUrl.includes(".ts") || lowerUrl.includes("video/mp2t");
   const isMP3 = lowerUrl.includes(".mp3");
   const isMKV = lowerUrl.includes(".mkv");
 
-  if (isM3U8) {
+  if (isM3U8 || isTS) {
     if (Hls.isSupported()) {
       currentHlsInstance = new Hls({
         debug: false,
