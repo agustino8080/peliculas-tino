@@ -409,6 +409,17 @@
       </div>
 
       <div class="lists-panel">
+        <!-- Lista de Prueba (TEST) -->
+        <div class="select-block" id="blockListTest">
+          <label for="selectTest" style="color: #4ade80; font-weight: bold;">🧪 LISTA DE PRUEBA (Canales Funcionando)</label>
+          <select id="selectTest" style="border: 2px solid #4ade80;">
+            <option value="">-- Selecciona un test --</option>
+            <option value="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8">M3U8: Stream de Prueba (Big Buck Bunny)</option>
+            <option value="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">MP4: Película de Prueba (Bunny)</option>
+            <option value="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">MP4: Cortometraje Elephants Dream</option>
+          </select>
+        </div>
+
         <!-- Lista 1 -->
         <div class="select-block" id="blockList1">
           <label for="selectComedia">Lista 1 - comedia1tv.m3u</label>
@@ -518,6 +529,7 @@ const selectOnline1   = document.getElementById("selectOnline1");
 const selectOnline11  = document.getElementById("selectOnline11");
 const selectOnline12  = document.getElementById("selectOnline12");
 const selectOnline13  = document.getElementById("selectOnline13");
+const selectTest      = document.getElementById("selectTest");
 
 const copyYearEl = document.getElementById("copyYear");
 
@@ -763,6 +775,13 @@ selectOnline13.addEventListener("change",()=>{
   const url = selectOnline13.value;
   if(!url) return;
   const label = "lista-online (13).m3u: " + selectOnline13.options[selectOnline13.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectTest.addEventListener("change",()=>{
+  const url = selectTest.value;
+  if(!url) return;
+  const label = "TEST: " + selectTest.options[selectTest.selectedIndex].textContent;
   loadDirectVideo(url,label);
 });
 
