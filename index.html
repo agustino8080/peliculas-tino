@@ -433,7 +433,7 @@
           </select>
         </div>
 
-        <!-- Lista 4 (oculta) -->
+        <!-- Lista 4 -->
         <div class="select-block" id="blockList4">
           <label for="selectOnline11">Lista 4 - lista-online (11).m3u</label>
           <select id="selectOnline11">
@@ -441,7 +441,7 @@
           </select>
         </div>
 
-        <!-- Lista 5 (oculta) -->
+        <!-- Lista 5 -->
         <div class="select-block" id="blockList5">
           <label for="selectOnline12">Lista 5 - lista-online (12).m3u</label>
           <select id="selectOnline12">
@@ -449,7 +449,7 @@
           </select>
         </div>
 
-        <!-- Lista 6 (oculta) -->
+        <!-- Lista 6 -->
         <div class="select-block" id="blockList6">
           <label for="selectOnline13">Lista 6 - lista-online (13).m3u</label>
           <select id="selectOnline13">
@@ -801,14 +801,16 @@ function setupImageSlider(container){
 }
 
 /* ==== INIT ==== */
-async function init(){
+async function init() {
+  console.log("Iniciando reproductor Pelis Tino...");
+  
   // Mostrar/ocultar listas según flags internos
-  blockList1.style.display = ENABLE_LIST_1 ? "block" : "none";
-  blockList2.style.display = ENABLE_LIST_2 ? "block" : "none";
-  blockList3.style.display = ENABLE_LIST_3 ? "block" : "none";
-  blockList4.style.display = ENABLE_LIST_4 ? "block" : "none";
-  blockList5.style.display = ENABLE_LIST_5 ? "block" : "none";
-  blockList6.style.display = ENABLE_LIST_6 ? "block" : "none";
+  blockList1.style.display = ENABLE_LIST_1 ? "flex" : "none";
+  blockList2.style.display = ENABLE_LIST_2 ? "flex" : "none";
+  blockList3.style.display = ENABLE_LIST_3 ? "flex" : "none";
+  blockList4.style.display = ENABLE_LIST_4 ? "flex" : "none";
+  blockList5.style.display = ENABLE_LIST_5 ? "flex" : "none";
+  blockList6.style.display = ENABLE_LIST_6 ? "flex" : "none";
 
   const y = new Date().getFullYear();
   copyYearEl.textContent = "2026" + (y > 2026 ? "–" + y : "");
