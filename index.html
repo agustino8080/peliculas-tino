@@ -423,9 +423,9 @@
 
         <!-- Lista 1 -->
         <div class="select-block" id="blockList1">
-          <label for="selectComedia">Lista 1 - comedia1tv.m3u</label>
+          <label for="selectComedia">Lista 1 - tv (1).m3u</label>
           <select id="selectComedia">
-            <option value="">Cargando comedia1tv.m3u...</option>
+            <option value="">Cargando tv (1).m3u...</option>
           </select>
         </div>
 
@@ -439,33 +439,33 @@
 
         <!-- Lista 3 -->
         <div class="select-block" id="blockList3">
-          <label for="selectOnline1">Lista 3 - lista-online (1).m3u</label>
+          <label for="selectOnline1">Lista 3 - 4Z.M3U.m3u</label>
           <select id="selectOnline1">
-            <option value="">Cargando lista-online (1).m3u...</option>
+            <option value="">Cargando 4Z.M3U.m3u...</option>
           </select>
         </div>
 
         <!-- Lista 4 -->
         <div class="select-block" id="blockList4">
-          <label for="selectOnline11">Lista 4 - lista-online (11).m3u</label>
+          <label for="selectOnline11">Lista 4 - online-20260220-1840.m3u</label>
           <select id="selectOnline11">
-            <option value="">Cargando lista-online (11).m3u...</option>
+            <option value="">Cargando online-20260220-1840.m3u...</option>
           </select>
         </div>
 
         <!-- Lista 5 -->
         <div class="select-block" id="blockList5">
-          <label for="selectOnline12">Lista 5 - lista-online (12).m3u</label>
+          <label for="selectOnline12">Lista 5 - iptv_online_67c_2026-03-12.m3u</label>
           <select id="selectOnline12">
-            <option value="">Cargando lista-online (12).m3u...</option>
+            <option value="">Cargando iptv_online_67c_2026-03-12.m3u...</option>
           </select>
         </div>
 
         <!-- Lista 6 -->
         <div class="select-block" id="blockList6">
-          <label for="selectOnline13">Lista 6 - lista-online (13).m3u</label>
+          <label for="selectOnline13">Lista 6 - iptv_online_119c_2026-03-12.m3u</label>
           <select id="selectOnline13">
-            <option value="">Cargando lista-online (13).m3u...</option>
+            <option value="">Cargando iptv_online_119c_2026-03-12.m3u...</option>
           </select>
         </div>
       </div>
@@ -504,12 +504,12 @@ const ENABLE_LIST_5 = true;
 const ENABLE_LIST_6 = true;
 
 /* ==== URLs de listas M3U ==== */
-const M3U_COMEDIA_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/comedia1tv.m3u";
+const M3U_COMEDIA_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/tv%20(1).m3u";
 const M3U_FULLROW_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista_fullrow.m3u";
-const M3U_ONLINE1_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(1).m3u";
-const M3U_ONLINE11_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(11).m3u";
-const M3U_ONLINE12_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(12).m3u";
-const M3U_ONLINE13_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(13).m3u";
+const M3U_ONLINE1_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/4Z.M3U.m3u";
+const M3U_ONLINE11_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/online-20260220-1840.m3u";
+const M3U_ONLINE12_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/iptv_online_67c_2026-03-12.m3u";
+const M3U_ONLINE13_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/iptv_online_119c_2026-03-12.m3u";
 
 /* ==== DOM ==== */
 const playerContainer  = document.getElementById("playerContainer");
@@ -824,12 +824,12 @@ async function init() {
   copyYearEl.textContent = "2026" + (y > 2026 ? "–" + y : "");
 
   const loadTasks = [];
-  if (ENABLE_LIST_1) loadTasks.push(loadM3UintoSelect(M3U_COMEDIA_URL,  selectComedia,  "comedia1tv.m3u"));
+  if (ENABLE_LIST_1) loadTasks.push(loadM3UintoSelect(M3U_COMEDIA_URL,  selectComedia,  "tv (1).m3u"));
   if (ENABLE_LIST_2) loadTasks.push(loadM3UintoSelect(M3U_FULLROW_URL,  selectFullrow,  "lista_fullrow.m3u"));
-  if (ENABLE_LIST_3) loadTasks.push(loadM3UintoSelect(M3U_ONLINE1_URL,  selectOnline1,  "lista-online (1).m3u"));
-  if (ENABLE_LIST_4) loadTasks.push(loadM3UintoSelect(M3U_ONLINE11_URL, selectOnline11, "lista-online (11).m3u"));
-  if (ENABLE_LIST_5) loadTasks.push(loadM3UintoSelect(M3U_ONLINE12_URL, selectOnline12, "lista-online (12).m3u"));
-  if (ENABLE_LIST_6) loadTasks.push(loadM3UintoSelect(M3U_ONLINE13_URL, selectOnline13, "lista-online (13).m3u"));
+  if (ENABLE_LIST_3) loadTasks.push(loadM3UintoSelect(M3U_ONLINE1_URL,  selectOnline1,  "4Z.M3U.m3u"));
+  if (ENABLE_LIST_4) loadTasks.push(loadM3UintoSelect(M3U_ONLINE11_URL, selectOnline11, "online-20260220-1840.m3u"));
+  if (ENABLE_LIST_5) loadTasks.push(loadM3UintoSelect(M3U_ONLINE12_URL, selectOnline12, "iptv_online_67c_2026-03-12.m3u"));
+  if (ENABLE_LIST_6) loadTasks.push(loadM3UintoSelect(M3U_ONLINE13_URL, selectOnline13, "iptv_online_119c_2026-03-12.m3u"));
 
   await Promise.all(loadTasks);
 
