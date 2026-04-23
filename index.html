@@ -560,35 +560,72 @@ function createBaseVideo(){
   return wrapper;
 }
 
-function loadDirectVideo(url,labelText){
+function loadDirectVideo(url, labelText) {
   clearPlayer();
-  if(!url) return;
+  if (!url) return;
 
   showLoading(true);
   showError(false);
   currentLabel.textContent = labelText || url;
 
-  const wrapper=createBaseVideo();
-  const video=currentVideoEl;
-  video.src=url;
+  const wrapper = createBaseVideo();
+  const video = currentVideoEl;
+  const isM3U8 = url.toLowerCase().includes(".m3u8");
+  const isMP3 = url.toLowerCase().includes(".mp3");
+  const isMKV = url.toLowerCase().includes(".mkv");
 
-  video.addEventListener("loadeddata",()=>{
-    showLoading(false);
-    showError(false);
-    video.play().catch(()=>{});
-  });
+  if (isM3U8) {
+    if (Hls.isSupported()) {
+      currentHlsInstance = new Hls();
+      currentHlsInstance.loadSource(url);
+      currentHlsInstance.attachMedia(video);
+      currentHlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        showLoading(false);
+        video.play().catch(() => {});
+      });
+      currentHlsInstance.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          console.error("HLS fatal error:", data.type);
+          showLoading(false);
+          showError(true);
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      // Native HLS support (Safari)
+      video.src = url;
+      video.addEventListener("loadedmetadata", () => {
+        showLoading(false);
+        video.play().catch(() => {});
+      });
+    } else {
+      showLoading(false);
+      showError(true);
+      console.error("HLS not supported in this browser");
+    }
+  } else {
+    // Direct playback for MP4, MP3, MKV (if supported), etc.
+    video.src = url;
+    video.addEventListener("loadeddata", () => {
+      showLoading(false);
+      showError(false);
+      video.play().catch(() => {});
+    });
 
-  video.addEventListener("error",()=>{
-    showLoading(false);
-    showError(true);
-  });
+    video.addEventListener("error", () => {
+      showLoading(false);
+      showError(true);
+      if (isMKV) {
+        console.warn("MKV format may not be supported by your browser natively.");
+      }
+    });
+  }
 
-  const a=document.createElement("a");
-  a.href=url;
-  a.target="_blank";
-  a.rel="noopener noreferrer";
-  a.textContent="Abrir directamente / Descargar este stream";
-  a.className="fallback-link";
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.textContent = "Abrir directamente / Descargar este stream";
+  a.className = "fallback-link";
   wrapper.appendChild(a);
 
   playerContainer.appendChild(wrapper);
