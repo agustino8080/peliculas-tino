@@ -542,20 +542,24 @@ function clearPlayer(){
   playerContainer.innerHTML="";
 }
 
-function createBaseVideo(){
-  const wrapper=document.createElement("div");
-  wrapper.style.width="100%";
-  wrapper.style.height="100%";
+function createBaseVideo() {
+  const wrapper = document.createElement("div");
+  wrapper.style.width = "100%";
+  wrapper.style.height = "100%";
 
-  const video=document.createElement("video");
-  video.controls=true;
-  video.autoplay=true;
-  video.style.width="100%";
-  video.style.height="100%";
-  video.style.background="#000";
+  const video = document.createElement("video");
+  video.controls = true;
+  video.autoplay = true;
+  video.muted = false; // Intentar con audio, pero algunos navegadores bloquean autoplay si no está muteado
+  video.setAttribute("playsinline", "true");
+  video.setAttribute("webkit-playsinline", "true");
+  video.setAttribute("crossorigin", "anonymous");
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.background = "#000";
 
   wrapper.appendChild(video);
-  currentVideoEl=video;
+  currentVideoEl = video;
 
   return wrapper;
 }
@@ -568,55 +572,89 @@ function loadDirectVideo(url, labelText) {
   showError(false);
   currentLabel.textContent = labelText || url;
 
+  // Verificar Contenido Mixto (HTTPS -> HTTP)
+  const isHttps = window.location.protocol === "https:";
+  const isUrlHttp = url.startsWith("http:");
+  
+  if (isHttps && isUrlHttp) {
+    console.warn("CUIDADO: Intentando cargar un enlace HTTP desde una página HTTPS. Esto suele ser bloqueado por el navegador.");
+    // No bloqueamos, pero avisamos en consola.
+  }
+
   const wrapper = createBaseVideo();
   const video = currentVideoEl;
-  const isM3U8 = url.toLowerCase().includes(".m3u8");
-  const isMP3 = url.toLowerCase().includes(".mp3");
-  const isMKV = url.toLowerCase().includes(".mkv");
+  const lowerUrl = url.toLowerCase();
+  const isM3U8 = lowerUrl.includes(".m3u8") || lowerUrl.includes("m3u8");
+  const isMP3 = lowerUrl.includes(".mp3");
+  const isMKV = lowerUrl.includes(".mkv");
 
   if (isM3U8) {
     if (Hls.isSupported()) {
-      currentHlsInstance = new Hls();
+      currentHlsInstance = new Hls({
+        debug: false,
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 90
+      });
       currentHlsInstance.loadSource(url);
       currentHlsInstance.attachMedia(video);
       currentHlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
         showLoading(false);
-        video.play().catch(() => {});
+        video.play().catch(() => {
+          // Si falla el autoplay, intentamos mutear y reproducir
+          video.muted = true;
+          video.play().catch(err => console.error("Error al reproducir:", err));
+        });
       });
       currentHlsInstance.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          console.error("HLS fatal error:", data.type);
-          showLoading(false);
-          showError(true);
+          switch (data.type) {
+            case Hls.ErrorTypes.NETWORK_ERROR:
+              console.error("Error de red HLS (posible CORS o 404)");
+              currentHlsInstance.startLoad();
+              break;
+            case Hls.ErrorTypes.MEDIA_ERROR:
+              console.error("Error de medios HLS, intentando recuperar...");
+              currentHlsInstance.recoverMediaError();
+              break;
+            default:
+              showLoading(false);
+              showError(true);
+              currentHlsInstance.destroy();
+              break;
+          }
         }
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      // Native HLS support (Safari)
+      // Soporte nativo (Safari / iOS)
       video.src = url;
       video.addEventListener("loadedmetadata", () => {
         showLoading(false);
-        video.play().catch(() => {});
+        video.play().catch(() => {
+          video.muted = true;
+          video.play().catch(() => {});
+        });
       });
     } else {
       showLoading(false);
       showError(true);
-      console.error("HLS not supported in this browser");
     }
   } else {
-    // Direct playback for MP4, MP3, MKV (if supported), etc.
+    // MP4, MP3, etc.
     video.src = url;
     video.addEventListener("loadeddata", () => {
       showLoading(false);
       showError(false);
-      video.play().catch(() => {});
+      video.play().catch(() => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
     });
 
-    video.addEventListener("error", () => {
+    video.addEventListener("error", (e) => {
       showLoading(false);
       showError(true);
-      if (isMKV) {
-        console.warn("MKV format may not be supported by your browser natively.");
-      }
+      console.error("Error en el elemento video:", video.error);
     });
   }
 
@@ -624,8 +662,11 @@ function loadDirectVideo(url, labelText) {
   a.href = url;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
-  a.textContent = "Abrir directamente / Descargar este stream";
+  a.textContent = "Si no carga, haz clic aquí para abrir el enlace directo";
   a.className = "fallback-link";
+  a.style.display = "block";
+  a.style.marginTop = "10px";
+  a.style.color = "#fb923c";
   wrapper.appendChild(a);
 
   playerContainer.appendChild(wrapper);
