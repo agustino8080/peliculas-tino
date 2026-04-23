@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo de Subtítulos - PELIS TINO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .demo-title {
+            color: #f97316;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .demo-btn {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+        
+        .demo-btn:hover {
+            background: #fb923c;
+        }
+        
+        .demo-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .demo-info {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .demo-status {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .status-indicator.active {
+            background: #22c55e;
+        }
+        
+        .demo-instructions {
+            background: #0b1120;
+            border-left: 4px solid #f97316;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .demo-instructions h4 {
+            color: #f97316;
+            margin-top: 0;
+        }
+        
+        .demo-instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .demo-instructions li {
+            margin-bottom: 5px;
+        }
+        
+        .file-info {
+            background: #1a1a1a;
+            border: 1px dashed #666;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            color: #999;
+        }
+        
+        .subtitle-upload {
+            border: 2px dashed #f97316;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .subtitle-upload:hover {
+            background: rgba(249, 115, 22, 0.1);
+            border-color: #fb923c;
+        }
+        
+        .subtitle-upload.dragover {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: #fb923c;
+        }
+        
+        #subtitleFileInput {
+            display: none;
+        }
+        
+        .subtitle-url-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .subtitle-url-input input {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .subtitle-url-input input::placeholder {
+            color: #666;
+        }
+        
+        .subtitle-url-input button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .subtitle-url-input button:hover {
+            background: #fb923c;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-section">
+            <h1 class="demo-title">🎬 Demo de Subtítulos - PELIS TINO</h1>
+            <p>Este es un demo de la funcionalidad de subtítulos que se puede añadir al reproductor original.</p>
+            <p><strong>Nota:</strong> El reproductor original está en <code>pelis.html</code>. Este demo muestra cómo funciona el sistema de subtítulos.</p>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🎮 Controles de Subtítulos</h2>
+            <div class="demo-controls">
+                <button class="demo-btn" onclick="toggleSubtitles()">Activar/Desactivar Subtítulos</button>
+                <button class="demo-btn" onclick="loadSampleSubtitles()">Cargar Subtítulos de Muestra</button>
+                <button class="demo-btn" onclick="loadGitHubSubtitles()">Cargar desde GitHub</button>
+                <button class="demo-btn" onclick="translateToEnglish()">Traducir a Inglés</button>
+                <button class="demo-btn" onclick="showStatus()">Mostrar Estado</button>
+                <button class="demo-btn" onclick="clearSubtitles()">Limpiar Subtítulos</button>
+            </div>
+            
+            <div class="demo-status" id="statusDisplay">
+                <div class="status-item">
+                    <div class="status-indicator" id="subtitleEnabled"></div>
+                    <span>Subtítulos Activados</span>
+                </div>
+                <div class="status-item">
+                    <div class="status-indicator" id="subtitleLoaded"></div>
+                    <span>Subtítulos Cargados</span>
+                </div>
+                <div class="status-item">
+                    <span>Total: <span id="subtitleCount">0</span> subtítulos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📁 Cargar Subtítulos desde Archivo</h2>
+            <div class="subtitle-upload" onclick="document.getElementById('subtitleFileInput').click()">
+                <h3>📤 Arrastra y suelta un archivo de subtítulos aquí</h3>
+                <p>o haz clic para seleccionar un archivo</p>
+                <p><small>Formatos soportados: .srt, .vtt</small></p>
+            </div>
+            <input type="file" id="subtitleFileInput" accept=".srt,.vtt" onchange="handleFileUpload(event)">
+            <div id="fileInfo" class="file-info" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🌐 Cargar Subtítulos desde URL</h2>
+            <div class="subtitle-url-input">
+                <input type="url" id="subtitleUrlInput" placeholder="https://ejemplo.com/subtitulos.srt">
+                <button onclick="loadFromUrl()">Cargar</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📖 Instrucciones de Uso</h2>
+            <div class="demo-instructions">
+                <h4>Para usar los subtítulos en el reproductor original:</h4>
+                <ol>
+                    <li><strong>Abre el archivo original:</strong> <code>pelis.html</code></li>
+                    <li><strong>Añade esta línea antes del cierre de &lt;/body&gt;:</strong>
+                        <br><code>&lt;script src="subtitles.js"&gt;&lt;/script&gt;</code>
+                    </li>
+                    <li><strong>Los subtítulos se activarán automáticamente</strong> cuando cargues un video</li>
+                    <li><strong>Pasa el mouse sobre el reproductor</strong> para ver los controles de subtítulos</li>
+                </ol>
+                
+                <h4>Características del sistema de subtítulos:</h4>
+                <ul>
+                    <li>✅ Soporta formatos SRT y VTT</li>
+                    <li>✅ Controles intuitivos (CC para activar/desactivar)</li>
+                    <li>✅ Carga de archivos por arrastrar y soltar</li>
+                    <li>✅ Carga desde URL</li>
+                    <li>✅ Sincronización automática con el video</li>
+                    <li>✅ Diseño moderno y responsive</li>
+                    <li>✅ No modifica el HTML original</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🎬 Películas desde GitHub (comedia1tv.m3u)</h2>
+            <div class="demo-info">
+                <p>Contenido del archivo M3U del repositorio de GitHub:</p>
+                <div id="m3uContent" style="max-height: 300px; overflow-y: auto; background: #1a1a1a; border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px;">
+                    Cargando contenido de comedia1tv.m3u...
+                </div>
+                <button class="demo-btn" onclick="loadGitHubSubtitles()" style="margin-top: 10px;">Cargar Subtítulos para estas Películas</button>
+                <button class="demo-btn" onclick="translateMovieTitles()" style="margin-top: 10px; margin-left: 10px;">Traducir Títulos al Inglés</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📝 Ejemplo de Archivo SRT</h2>
+            <div class="demo-info">
+                <p>Aquí tienes un ejemplo de contenido SRT que puedes guardar en un archivo .srt:</p>
+                <textarea readonly style="width: 100%; height: 200px; background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px;">1
+00:00:01,000 --> 00:00:04,000
+Bienvenido al reproductor PELIS TINO
+
+2
+00:00:05,000 --> 00:00:08,000
+Este es un ejemplo de subtítulos
+
+3
+00:00:09,000 --> 00:00:12,000
+Puedes cargar tus propios subtítulos
+
+4
+00:00:13,000 --> 00:00:16,000
+Soporta formatos SRT y VTT
+
+5
+00:00:17,000 --> 00:00:20,000
+¡Disfruta de tu contenido!</textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales para el demo
+        let subtitleManager = null;
+        let demoVideo = null;
+
+        // Crear un video de demo
+        function createDemoVideo() {
+            const videoContainer = document.createElement('div');
+            videoContainer.style.cssText = `
+                width: 100%;
+                max-width: 800px;
+                margin: 20px auto;
+                background: #000;
+                border-radius: 10px;
+                overflow: hidden;
+                position: relative;
+            `;
+            
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.cssText = 'width: 100%; height: auto; display: block;';
+            
+            // Video de muestra (puedes cambiar esta URL por un video real)
+            video.src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+            
+            videoContainer.appendChild(video);
+            document.querySelector('.demo-section').appendChild(videoContainer);
+            
+            demoVideo = video;
+            return video;
+        }
+
+        // Inicializar el sistema de subtítulos
+        function initSubtitleSystem() {
+            if (typeof SubtitleManager !== 'undefined') {
+                subtitleManager = new SubtitleManager();
+            } else {
+                console.error('El sistema de subtítulos no está disponible');
+            }
+        }
+
+        // Funciones de control
+        function toggleSubtitles() {
+            if (subtitleManager) {
+                subtitleManager.toggleSubtitles();
+                updateStatus();
+            } else {
+                alert('El sistema de subtítulos aún no está inicializado. Por favor espera.');
+            }
+        }
+
+        function loadSampleSubtitles() {
+            if (!subtitleManager) {
+                alert('El sistema de subtítulos aún no está inicializado. Por favor espera.');
+                return;
+            }
+
+            // Contenido SRT de muestra
+            const sampleSRT = `1
+00:00:01,000 --> 00:00:04,000
+Bienvenido al demo de subtítulos
+
+2
+00:00:05,000 --> 00:00:08,000
+Este es un ejemplo de subtítulos SRT
+
+3
+00:00:09,000 --> 00:00:12,000
+Puedes cargar tus propios subtítulos
+
+4
+00:00:13,000 --> 00:00:16,000
+Arrastra un archivo .srt o .vtt
+
+5
+00:00:17,000 --> 00:00:20,000
+¡Y los subtítulos aparecerán automáticamente!
+
+6
+00:00:21,000 --> 00:00:24,000
+También puedes cargar desde una URL
+
+7
+00:00:25,000 --> 00:00:28,000
+El sistema es muy fácil de usar
+
+8
+00:00:29,000 --> 00:00:32,000
+Disfruta de tu contenido con subtítulos`;
+
+            subtitleManager.parseSubtitles(sampleSRT, 'sample.srt');
+            updateStatus();
+            
+            // Reproducir el video si está pausado
+            if (demoVideo && demoVideo.paused) {
+                demoVideo.play().catch(e => console.log('No se pudo reproducir automáticamente'));
+            }
+        }
+
+        function showStatus() {
+            if (subtitleManager) {
+                const status = subtitleManager.getStatus();
+                alert(`Estado de subtítulos:\n\n` +
+                      `Activados: ${status.enabled ? 'Sí' : 'No'}\n` +
+                      `Cargados: ${status.loaded ? 'Sí' : 'No'}\n` +
+                      `Total: ${status.count} subtítulos`);
+            } else {
+                alert('El sistema de subtítulos aún no está inicializado.');
+            }
+        }
+
+        function clearSubtitles() {
+            if (subtitleManager) {
+                subtitleManager.subtitles = [];
+                subtitleManager.hideSubtitle();
+                updateStatus();
+                alert('Subtítulos limpiados');
+            }
+        }
+
+        function updateStatus() {
+            if (!subtitleManager) return;
+            
+            const status = subtitleManager.getStatus();
+            
+            document.getElementById('subtitleEnabled').classList.toggle('active', status.enabled);
+            document.getElementById('subtitleLoaded').classList.toggle('active', status.loaded);
+            document.getElementById('subtitleCount').textContent = status.count;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (subtitleManager) {
+                    subtitleManager.parseSubtitles(e.target.result, file.name);
+                    updateStatus();
+                    
+                    // Mostrar info del archivo
+                    const fileInfo = document.getElementById('fileInfo');
+                    fileInfo.innerHTML = `
+                        <strong>Archivo cargado:</strong> ${file.name}<br>
+                        <strong>Tamaño:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                        <strong>Tipo:</strong> ${file.type || 'text/plain'}
+                    `;
+                    fileInfo.style.display = 'block';
+                    
+                    // Reproducir el video si está pausado
+                    if (demoVideo && demoVideo.paused) {
+                        demoVideo.play().catch(e => console.log('No se pudo reproducir automáticamente'));
+                    }
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadFromUrl() {
+            const url = document.getElementById('subtitleUrlInput').value.trim();
+            if (!url) {
+                alert('Por favor ingresa una URL válida');
+                return;
+            }
+
+            if (subtitleManager) {
+                subtitleManager.loadSubtitlesFromUrl(url);
+                updateStatus();
+                
+                // Reproducir el video si está pausado
+                if (demoVideo && demoVideo.paused) {
+                    demoVideo.play().catch(e => console.log('No se pudo reproducir automáticamente'));
+                }
+            }
+        }
+
+        function loadGitHubSubtitles() {
+            // Cargar subtítulos desde el archivo comedia1tv.m3u de GitHub
+            const githubUrl = 'https://raw.githubusercontent.com/agustino8080/listam3u/main/comedia1tv.m3u';
+            
+            fetch(githubUrl)
+                .then(response => response.text())
+                .then(content => {
+                    // Parsear el contenido M3U para extraer información de películas
+                    const lines = content.split('\n');
+                    const movies = [];
+                    let currentTitle = '';
+                    
+                    lines.forEach(line => {
+                        line = line.trim();
+                        if (line.startsWith('#EXTINF:')) {
+                            // Extraer el título después de la última coma
+                            const lastCommaIndex = line.lastIndexOf(',');
+                            if (lastCommaIndex !== -1) {
+                                currentTitle = line.substring(lastCommaIndex + 1).trim();
+                            }
+                        } else if (line && !line.startsWith('#') && currentTitle) {
+                            // Es una URL de película
+                            movies.push({
+                                title: currentTitle,
+                                url: line,
+                                originalLanguage: 'español'
+                            });
+                            currentTitle = '';
+                        }
+                    });
+                    
+                    // Mostrar las películas disponibles
+                    if (movies.length > 0) {
+                        let movieList = 'Películas encontradas en comedia1tv.m3u:\n\n';
+                        movies.forEach((movie, index) => {
+                            movieList += `${index + 1}. ${movie.title}\n`;
+                        });
+                        movieList += '\nSe han cargado los subtítulos de muestra para estas películas.';
+                        alert(movieList);
+                        
+                        // Cargar subtítulos de muestra basados en estas películas
+                        loadMovieSubtitles(movies);
+                    } else {
+                        alert('No se encontraron películas en el archivo M3U');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar desde GitHub:', error);
+                    alert('Error al cargar el archivo desde GitHub');
+                });
+        }
+
+        function loadMovieSubtitles(movies) {
+            if (!subtitleManager) return;
+            
+            // Crear subtítulos de muestra basados en las películas
+            const sampleSubtitles = [];
+            let currentTime = 0;
+            
+            movies.forEach((movie, index) => {
+                // Crear subtítulos de muestra para cada película
+                sampleSubtitles.push({
+                    start: currentTime,
+                    end: currentTime + 3,
+                    text: `Ahora reproduciendo: ${movie.title}`
+                });
+                
+                currentTime += 5;
+                
+                sampleSubtitles.push({
+                    start: currentTime,
+                    end: currentTime + 3,
+                    text: `Idioma original: ${movie.originalLanguage}`
+                });
+                
+                currentTime += 5;
+            });
+            
+            // Cargar los subtítulos en el gestor
+            subtitleManager.subtitles = sampleSubtitles;
+            updateStatus();
+            
+            alert(`Se han cargado ${sampleSubtitles.length} subtítulos de muestra para ${movies.length} películas`);
+        }
+
+        function translateToEnglish() {
+            if (!subtitleManager || subtitleManager.subtitles.length === 0) {
+                alert('Primero debes cargar subtítulos para traducir');
+                return;
+            }
+            
+            // Traducción básica de inglés a español (diccionario simple)
+            const translations = {
+                'Now playing': 'Reproduciendo ahora',
+                'Original language': 'Idioma original',
+                'English': 'Inglés',
+                'Spanish': 'Español',
+                'Welcome to the subtitle demo': 'Bienvenido al demo de subtítulos',
+                'This is an example of SRT subtitles': 'Este es un ejemplo de subtítulos SRT',
+                'You can load your own subtitles': 'Puedes cargar tus propios subtítulos',
+                'Drag a .srt or .vtt file': 'Arrastra un archivo .srt o .vtt',
+                'And subtitles will appear automatically!': '¡Y los subtítulos aparecerán automáticamente!',
+                'You can also load from a URL': 'También puedes cargar desde una URL',
+                'The system is very easy to use': 'El sistema es muy fácil de usar',
+                'Enjoy your content with subtitles': 'Disfruta de tu contenido con subtítulos',
+                'comedy': 'comedia',
+                'movie': 'película',
+                'action': 'acción',
+                'adventure': 'aventura',
+                'romance': 'romance',
+                'horror': 'terror',
+                'suspense': 'suspenso',
+                'drama': 'drama',
+                'fantasy': 'fantasía',
+                'science fiction': 'ciencia ficción',
+                'animation': 'animación',
+                'family': 'familia',
+                'music': 'música',
+                'documentary': 'documental',
+                'dubbed': 'doblado',
+                'subtitled': 'subtitulado',
+                'Latin': 'Latino'
+            };
+            
+            // Traducir los subtítulos actuales
+            subtitleManager.subtitles.forEach(subtitle => {
+                let translatedText = subtitle.text;
+                
+                // Reemplazar palabras y frases comunes
+                Object.keys(translations).forEach(english => {
+                    const spanish = translations[english];
+                    translatedText = translatedText.replace(new RegExp(english, 'gi'), spanish);
+                });
+                
+                subtitle.text = translatedText;
+            });
+            
+            updateStatus();
+            alert('Subtítulos traducidos al español');
+        }
+
+        // Manejar arrastrar y soltar
+        function setupDragAndDrop() {
+            const uploadArea = document.querySelector('.subtitle-upload');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.name.match(/\.(srt|vtt)$/i)) {
+                        const event = { target: { files: [file] } };
+                        handleFileUpload(event);
+                    } else {
+                        alert('Por favor arrastra un archivo .srt o .vtt');
+                    }
+                }
+            });
+        }
+
+        // Función para cargar y mostrar el contenido del archivo M3U
+        function loadM3UContent() {
+            const githubUrl = 'https://raw.githubusercontent.com/agustino8080/listam3u/main/comedia1tv.m3u';
+            
+            fetch(githubUrl)
+                .then(response => response.text())
+                .then(content => {
+                    const m3uContent = document.getElementById('m3uContent');
+                    m3uContent.textContent = content;
+                    m3uContent.style.whiteSpace = 'pre-wrap';
+                    
+                    // Parsear películas para contarlas
+                    const lines = content.split('\n');
+                    let movieCount = 0;
+                    lines.forEach(line => {
+                        if (line.trim() && !line.startsWith('#') && line.includes('http')) {
+                            movieCount++;
+                        }
+                    });
+                    
+                    // Añadir información estadística
+                    const infoDiv = document.createElement('div');
+                    infoDiv.style.cssText = 'margin-top: 10px; padding: 10px; background: rgba(249, 115, 22, 0.1); border-radius: 5px; font-size: 14px;';
+                    infoDiv.innerHTML = `<strong>📊 Estadísticas:</strong> Se encontraron ${movieCount} películas en el archivo comedia1tv.m3u`;
+                    
+                    const container = m3uContent.parentNode;
+                    if (container.querySelector('.m3u-stats')) {
+                        container.querySelector('.m3u-stats').remove();
+                    }
+                    infoDiv.className = 'm3u-stats';
+                    container.appendChild(infoDiv);
+                })
+                .catch(error => {
+                    console.error('Error al cargar el archivo M3U:', error);
+                    document.getElementById('m3uContent').textContent = 'Error al cargar el archivo desde GitHub';
+                });
+        }
+
+        // Función para traducir títulos de películas al inglés
+        function translateMovieTitles() {
+            const m3uContent = document.getElementById('m3uContent');
+            const content = m3uContent.textContent;
+            
+            // Diccionario básico de traducción de títulos comunes
+            const movieTranslations = {
+                'comedia': 'comedy',
+                'película': 'movie',
+                'español': 'Spanish',
+                'latino': 'Latin',
+                'doblado': 'dubbed',
+                'subtitulado': 'subtitled',
+                'HD': 'HD',
+                '4K': '4K',
+                '1080p': '1080p',
+                '720p': '720p',
+                'acción': 'action',
+                'aventura': 'adventure',
+                'romance': 'romance',
+                'terror': 'horror',
+                'suspenso': 'suspense',
+                'drama': 'drama',
+                'fantasía': 'fantasy',
+                'ciencia ficción': 'science fiction',
+                'animación': 'animation',
+                'familia': 'family',
+                'música': 'music',
+                'documental': 'documentary'
+            };
+            
+            let translatedContent = content;
+            
+            // Traducir títulos en las líneas EXTINF
+            Object.keys(movieTranslations).forEach(spanish => {
+                const english = movieTranslations[spanish];
+                const regex = new RegExp(`(${spanish})`, 'gi');
+                translatedContent = translatedContent.replace(regex, english);
+            });
+            
+            // Mostrar contenido traducido
+            m3uContent.textContent = translatedContent;
+            
+            alert('Títulos traducidos al inglés');
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear el video de demo
+            createDemoVideo();
+            
+            // Inicializar el sistema de subtítulos
+            initSubtitleSystem();
+            
+            // Configurar arrastrar y soltar
+            setupDragAndDrop();
+            
+            // Cargar el contenido M3U
+            loadM3UContent();
+            
+            // Actualizar estado cada segundo
+            setInterval(updateStatus, 1000);
+            
+            // Cargar subtítulos de muestra automáticamente después de 2 segundos
+            setTimeout(function() {
+                if (subtitleManager) {
+                    loadSampleSubtitles();
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo de Traducción M3U - PELIS TINO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+        }
+        
+        .demo-title {
+            color: #f97316;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .demo-btn {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+        
+        .demo-btn:hover {
+            background: #fb923c;
+        }
+        
+        .demo-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .m3u-select {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .m3u-select option {
+            padding: 5px;
+        }
+        
+        .movie-info {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .movie-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .movie-item:last-child {
+            border-bottom: none;
+        }
+        
+        .movie-title {
+            font-weight: bold;
+            color: #f97316;
+        }
+        
+        .movie-url {
+            font-size: 12px;
+            color: #888;
+            word-break: break-all;
+        }
+        
+        .translation-status {
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid #f97316;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .subtitle-display {
+            background: #0b1120;
+            border-left: 4px solid #f97316;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 0 5px 5px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .demo-video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .translation-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .language-toggle {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: #444;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #f97316;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(25px);
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-section">
+            <h1 class="demo-title">🎬 Demo de Traducción M3U - PELIS TINO</h1>
+            <p>Este demo carga la lista M3U desde GitHub y permite traducir los títulos de las películas.</p>
+            <p><strong>Lista cargada:</strong> <code>comedia1tv.m3u</code></p>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📺 Controles de Traducción</h2>
+            
+            <div class="language-toggle">
+                <span>Idioma:</span>
+                <button class="demo-btn" id="btnSpanish" onclick="setLanguage('es')">ES</button>
+                <button class="demo-btn" id="btnEnglish" onclick="setLanguage('en')">EN</button>
+                <button class="demo-btn" id="btnAuto" onclick="setLanguage('auto')">AUTO</button>
+            </div>
+            
+            <div class="translation-controls">
+                <button class="demo-btn" onclick="loadM3UList()">🔄 Cargar Lista M3U</button>
+                <button class="demo-btn" onclick="translateCurrentList()">🌐 Traducir Títulos</button>
+                <button class="demo-btn" onclick="generateSubtitles()">📝 Generar Subtítulos</button>
+                <button class="demo-btn" onclick="playDemoVideo()">▶️ Reproducir Demo</button>
+            </div>
+            
+            <div class="translation-status" id="translationStatus">
+                Estado: Esperando carga de lista...
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🎥 Reproductor con Subtítulos</h2>
+            <div class="video-container" id="videoContainer">
+                <div style="padding: 40px; text-align: center; color: #888;">
+                    <h3>Reproductor de Video</h3>
+                    <p>Los subtítulos aparecerán aquí cuando cargues una lista</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📋 Lista de Películas</h2>
+            <select class="m3u-select" id="movieSelect" onchange="selectMovie()">
+                <option value="">Cargando lista M3U desde GitHub...</option>
+            </select>
+            
+            <div id="movieList" class="movie-info">
+                <div class="loading">Cargando películas...</div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">📖 Subtítulos Generados</h2>
+            <div id="subtitleDisplay" class="subtitle-display">
+                <p>Los subtítulos aparecerán aquí cuando generes la traducción...</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 class="demo-title">🔧 Instrucciones de Uso</h2>
+            <div style="background: #0b1120; border-left: 4px solid #f97316; padding: 15px; border-radius: 0 5px 5px 0;">
+                <h4>Para usar en el reproductor original:</h4>
+                <ol>
+                    <li><strong>Abre el archivo original:</strong> <code>pelis.html</code></li>
+                    <li><strong>Añade esta línea antes del cierre de &lt;/body&gt;:</strong>
+                        <br><code>&lt;script src="subtitles.js"&gt;&lt;/script&gt;</code>
+                    </li>
+                    <li><strong>Usa esta función para cargar subtítulos:</strong>
+                        <br><code>loadSubtitlesFromM3U('https://github.com/agustino8080/listam3u/blob/main/comedia1tv.m3u')</code>
+                    </li>
+                </ol>
+                
+                <h4>Características del sistema:</h4>
+                <ul>
+                    <li>✅ Carga automática de listas M3U desde GitHub</li>
+                    <li>✅ Traducción de títulos de películas</li>
+                    <li>✅ Generación automática de subtítulos</li>
+                    <li>✅ Sincronización con el video</li>
+                    <li>✅ Soporte para múltiples idiomas</li>
+                    <li>✅ No modifica el HTML original</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentLanguage = 'es';
+        let movieList = [];
+        let translatedList = [];
+        let currentVideo = null;
+        let subtitleManager = null;
+        
+        // Diccionario de traducciones
+        const translations = {
+            'comedy': 'comedia',
+            'movie': 'película',
+            'action': 'acción',
+            'adventure': 'aventura',
+            'romance': 'romance',
+            'horror': 'terror',
+            'suspense': 'suspenso',
+            'drama': 'drama',
+            'fantasy': 'fantasía',
+            'science fiction': 'ciencia ficción',
+            'animation': 'animación',
+            'family': 'familia',
+            'music': 'música',
+            'documentary': 'documental',
+            'dubbed': 'doblado',
+            'subtitled': 'subtitulado',
+            'Latin': 'Latino',
+            'HD': 'HD',
+            '4K': '4K',
+            '1080p': '1080p',
+            '720p': '720p'
+        };
+        
+        // Función para cargar la lista M3U desde GitHub
+        async function loadM3UList() {
+            const githubUrl = 'https://raw.githubusercontent.com/agustino8080/listam3u/main/comedia1tv.m3u';
+            const statusDiv = document.getElementById('translationStatus');
+            
+            try {
+                statusDiv.textContent = 'Estado: Cargando lista M3U...';
+                
+                const response = await fetch(githubUrl);
+                if (!response.ok) throw new Error('Error al cargar el archivo');
+                
+                const content = await response.text();
+                movieList = parseM3U(content);
+                
+                statusDiv.textContent = `Estado: Lista cargada - ${movieList.length} películas encontradas`;
+                
+                // Actualizar el select
+                updateMovieSelect();
+                
+                // Mostrar la lista
+                displayMovieList();
+                
+                // Traducir automáticamente
+                translateCurrentList();
+                
+            } catch (error) {
+                statusDiv.textContent = `Error: ${error.message}`;
+                document.getElementById('movieList').innerHTML = `<div class="error">Error al cargar la lista: ${error.message}</div>`;
+            }
+        }
+        
+        // Función para parsear el contenido M3U
+        function parseM3U(content) {
+            const lines = content.split('\n');
+            const movies = [];
+            let currentTitle = '';
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    // Extraer el título después de la última coma
+                    const lastCommaIndex = line.lastIndexOf(',');
+                    if (lastCommaIndex !== -1) {
+                        currentTitle = line.substring(lastCommaIndex + 1).trim();
+                    }
+                } else if (line && !line.startsWith('#') && currentTitle && line.includes('http')) {
+                    // Es una URL de película
+                    movies.push({
+                        originalTitle: currentTitle,
+                        url: line,
+                        id: movies.length + 1
+                    });
+                    currentTitle = '';
+                }
+            });
+            
+            return movies;
+        }
+        
+        // Función para actualizar el select de películas
+        function updateMovieSelect() {
+            const select = document.getElementById('movieSelect');
+            select.innerHTML = '<option value="">Selecciona una película...</option>';
+            
+            movieList.forEach(movie => {
+                const option = document.createElement('option');
+                option.value = movie.id;
+                option.textContent = movie.originalTitle;
+                select.appendChild(option);
+            });
+        }
+        
+        // Función para mostrar la lista de películas
+        function displayMovieList() {
+            const listDiv = document.getElementById('movieList');
+            
+            if (movieList.length === 0) {
+                listDiv.innerHTML = '<div class="error">No se encontraron películas</div>';
+                return;
+            }
+            
+            let html = '';
+            movieList.forEach(movie => {
+                const translatedTitle = translateTitle(movie.originalTitle);
+                html += `
+                    <div class="movie-item">
+                        <div>
+                            <div class="movie-title">${movie.originalTitle}</div>
+                            ${translatedTitle !== movie.originalTitle ? `<div style="color: #f97316; font-size: 12px;">→ ${translatedTitle}</div>` : ''}
+                        </div>
+                        <div class="movie-url">${movie.url.substring(0, 50)}...</div>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+        
+        // Función para traducir títulos
+        function translateTitle(title) {
+            let translated = title;
+            
+            Object.keys(translations).forEach(english => {
+                const spanish = translations[english];
+                const regex = new RegExp(`\\b${english}\\b`, 'gi');
+                translated = translated.replace(regex, spanish);
+            });
+            
+            return translated;
+        }
+        
+        // Función para traducir la lista actual
+        function translateCurrentList() {
+            if (movieList.length === 0) {
+                alert('Primero carga una lista M3U');
+                return;
+            }
+            
+            translatedList = movieList.map(movie => ({
+                ...movie,
+                translatedTitle: translateTitle(movie.originalTitle)
+            }));
+            
+            document.getElementById('translationStatus').textContent = 
+                `Estado: Lista traducida - ${translatedList.length} películas procesadas`;
+            
+            displayTranslatedList();
+            generateSubtitles();
+        }
+        
+        // Función para mostrar la lista traducida
+        function displayTranslatedList() {
+            const listDiv = document.getElementById('movieList');
+            
+            let html = '';
+            translatedList.forEach(movie => {
+                html += `
+                    <div class="movie-item">
+                        <div>
+                            <div class="movie-title">${movie.originalTitle}</div>
+                            <div style="color: #22c55e; font-size: 12px;">→ ${movie.translatedTitle}</div>
+                        </div>
+                        <div class="movie-url">${movie.url.substring(0, 50)}...</div>
+                    </div>
+                `;
+            });
+            
+            listDiv.innerHTML = html;
+        }
+        
+        // Función para generar subtítulos
+        function generateSubtitles() {
+            if (translatedList.length === 0) {
+                alert('Primero traduce la lista');
+                return;
+            }
+            
+            let subtitles = '';
+            let time = 0;
+            
+            translatedList.forEach((movie, index) => {
+                // Subtítulo de presentación
+                subtitles += `${index * 2 + 1}\\n`;
+                subtitles += `${formatTime(time)} --> ${formatTime(time + 3)}\\n`;
+                subtitles += `Ahora reproduciendo: ${movie.translatedTitle}\\n\\n`;
+                
+                time += 5;
+                
+                // Subtítulo de información
+                subtitles += `${index * 2 + 2}\\n`;
+                subtitles += `${formatTime(time)} --> ${formatTime(time + 3)}\\n`;
+                subtitles += `Idioma: Español | Título original: ${movie.originalTitle}\\n\\n`;
+                
+                time += 5;
+            });
+            
+            document.getElementById('subtitleDisplay').innerHTML = `
+                <h4>Subtítulos SRT generados:</h4>
+                <textarea readonly style="width: 100%; height: 200px; background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 10px; font-family: monospace; font-size: 12px;">${subtitles}</textarea>
+                <p><strong>Total:</strong> ${translatedList.length * 2} subtítulos generados</p>
+            `;
+            
+            // Cargar en el reproductor si existe
+            if (subtitleManager) {
+                subtitleManager.parseSubtitles(subtitles, 'generated.srt');
+            }
+        }
+        
+        // Función para formatear tiempo SRT
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+        }
+        
+        // Función para reproducir video demo
+        function playDemoVideo() {
+            const container = document.getElementById('videoContainer');
+            
+            container.innerHTML = `
+                <video class="demo-video" id="demoVideo" controls>
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    Tu navegador no soporta el elemento de video.
+                </video>
+            `;
+            
+            currentVideo = document.getElementById('demoVideo');
+            
+            // Inicializar el sistema de subtítulos
+            if (typeof SubtitleManager !== 'undefined') {
+                subtitleManager = new SubtitleManager();
+                subtitleManager.currentVideo = currentVideo;
+                subtitleManager.setupVideo(currentVideo);
+            }
+            
+            // Reproducir automáticamente
+            currentVideo.play().catch(e => console.log('No se pudo reproducir automáticamente'));
+        }
+        
+        // Función para seleccionar película
+        function selectMovie() {
+            const select = document.getElementById('movieSelect');
+            const selectedId = parseInt(select.value);
+            
+            if (!selectedId) return;
+            
+            const movie = translatedList.find(m => m.id === selectedId);
+            if (movie) {
+                document.getElementById('translationStatus').textContent = 
+                    `Película seleccionada: ${movie.translatedTitle} (original: ${movie.originalTitle})`;
+            }
+        }
+        
+        // Función para cambiar idioma
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Actualizar botones
+            document.querySelectorAll('.demo-btn').forEach(btn => {
+                btn.style.background = '#f97316';
+            });
+            
+            if (lang === 'es') {
+                document.getElementById('btnSpanish').style.background = '#22c55e';
+            } else if (lang === 'en') {
+                document.getElementById('btnEnglish').style.background = '#22c55e';
+            } else {
+                document.getElementById('btnAuto').style.background = '#22c55e';
+            }
+            
+            // Si hay películas cargadas, volver a procesar
+            if (movieList.length > 0) {
+                if (lang === 'auto') {
+                    translateCurrentList();
+                } else {
+                    // Mostrar en el idioma seleccionado
+                    displayMovieList();
+                }
+            }
+        }
+        
+        // Función para cargar subtítulos desde M3U (global)
+        window.loadSubtitlesFromM3U = async function(m3uUrl) {
+            try {
+                const response = await fetch(m3uUrl);
+                const content = await response.text();
+                const movies = parseM3U(content);
+                
+                // Generar subtítulos automáticamente
+                let subtitles = '';
+                let time = 0;
+                
+                movies.forEach((movie, index) => {
+                    const translatedTitle = translateTitle(movie.originalTitle);
+                    
+                    subtitles += `${index * 2 + 1}\\n`;
+                    subtitles += `${formatTime(time)} --> ${formatTime(time + 3)}\\n`;
+                    subtitles += `Reproduciendo: ${translatedTitle}\\n\\n`;
+                    
+                    time += 5;
+                    
+                    subtitles += `${index * 2 + 2}\\n`;
+                    subtitles += `${formatTime(time)} --> ${formatTime(time + 3)}\\n`;
+                    subtitles += `Original: ${movie.originalTitle}\\n\\n`;
+                    
+                    time += 5;
+                });
+                
+                if (window.subtitleManager) {
+                    window.subtitleManager.parseSubtitles(subtitles, 'm3u-generated.srt');
+                }
+                
+                return {
+                    success: true,
+                    movieCount: movies.length,
+                    subtitleCount: movies.length * 2
+                };
+                
+            } catch (error) {
+                console.error('Error al cargar subtítulos desde M3U:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        };
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar la lista automáticamente
+            loadM3UList();
+            
+            // Establecer idioma por defecto
+            setLanguage('auto');
+        });
+    </script>
+</body>
+</html>

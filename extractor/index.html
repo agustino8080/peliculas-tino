@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extractor de Imágenes - Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #f97316;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #aaa;
+            font-size: 1.1rem;
+        }
+        
+        .demo-section {
+            background: #2a2a2a;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #444;
+        }
+        
+        .url-input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+        
+        .extract-btn {
+            padding: 12px 25px;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .extract-btn:hover {
+            background: #fb923c;
+            transform: translateY(-2px);
+        }
+        
+        .extract-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .example-card {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-card:hover {
+            border-color: #f97316;
+            transform: translateY(-3px);
+        }
+        
+        .example-title {
+            color: #f97316;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .example-url {
+            color: #888;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #444;
+        }
+        
+        .results-title {
+            color: #f97316;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .results-count {
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .image-card {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .image-card:hover {
+            border-color: #f97316;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        
+        .image-container {
+            position: relative;
+            padding-bottom: 75%;
+            overflow: hidden;
+        }
+        
+        .image-thumb {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .image-thumb:hover {
+            transform: scale(1.1);
+        }
+        
+        .image-info {
+            padding: 15px;
+        }
+        
+        .image-name {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 8px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        
+        .image-size {
+            color: #888;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn {
+            width: 100%;
+            padding: 8px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #16a34a;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #f97316;
+            font-size: 18px;
+        }
+        
+        .error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .preview-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        
+        .preview-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        
+        .instructions {
+            background: #0b1120;
+            border-left: 4px solid #f97316;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            color: #f97316;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #f97316;
+            margin: 10px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .url-input-group {
+                flex-direction: column;
+            }
+            
+            .examples {
+                grid-template-columns: 1fr;
+            }
+            
+            .images-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ Extractor de Imágenes</h1>
+            <p>Extrae imágenes de cualquier página web de forma fácil y rápida</p>
+        </div>
+
+        <div class="demo-section">
+            <h2 style="color: #f97316; margin-bottom: 20px;">🔗 Extracción de Imágenes</h2>
+            
+            <div class="url-input-group">
+                <input type="text" class="url-input" id="urlInput" placeholder="Ingresa la URL de la página web...">
+                <button class="extract-btn" id="extractBtn" onclick="extractImages()">Extraer Imágenes</button>
+            </div>
+            
+            <div class="examples">
+                <div class="example-card" onclick="loadExample('https://www.ebay.com/str/bluehaze?_trksid=p4429486.m3561.l161211')">
+                    <div class="example-title">🏪 eBay Store - BlueHaze</div>
+                    <div class="example-url">Tienda de eBay con productos</div>
+                </div>
+                
+                <div class="example-card" onclick="loadExample('https://unsplash.com')">
+                    <div class="example-title">📸 Unsplash</div>
+                    <div class="example-url">Fotografías de alta calidad</div>
+                </div>
+                
+                <div class="example-card" onclick="loadExample('https://www.amazon.com')">
+                    <div class="example-title">📦 Amazon</div>
+                    <div class="example-url">Productos y catálogos</div>
+                </div>
+            </div>
+            
+            <div id="resultsContainer">
+                <!-- Los resultados aparecerán aquí -->
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2 style="color: #f97316; margin-bottom: 20px;">🛠️ Cómo funciona</h2>
+            
+            <div class="instructions">
+                <h3>Características del extractor:</h3>
+                <ul>
+                    <li>✅ Extrae imágenes de cualquier página web</li>
+                    <li>✅ Detecta imágenes en diferentes formatos (img, background-image, etc.)</li>
+                    <li>✅ Maneja CORS con proxy para evitar restricciones</li>
+                    <li>✅ Interfaz intuitiva y fácil de usar</li>
+                    <li>✅ Vista previa de imágenes antes de descargar</li>
+                    <li>✅ Descarga individual o masiva de imágenes</li>
+                </ul>
+                
+                <h3>Uso desde consola:</h3>
+                <div class="code-block">
+// Extraer imágenes de una página
+extractImages('https://www.ebay.com/str/bluehaze');
+
+// Usar el extractor directamente
+imageExtractor.extractImages();
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="image-extractor-demo.js"></script>
+    <script>
+        // Funciones del demo
+        function loadExample(url) {
+            document.getElementById('urlInput').value = url;
+            extractImages();
+        }
+        
+        async function extractImages() {
+            const url = document.getElementById('urlInput').value.trim();
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (!url) {
+                resultsContainer.innerHTML = '<div class="error">Por favor ingresa una URL válida</div>';
+                return;
+            }
+            
+            // Mostrar loading
+            resultsContainer.innerHTML = '<div class="loading">⏳ Extrayendo imágenes...</div>';
+            
+            try {
+                // Esperar a que el extractor esté disponible
+                if (typeof ImageExtractorDemo === 'undefined') {
+                    throw new Error('El extractor no está cargado');
+                }
+                
+                // Extraer imágenes usando el extractor demo
+                const result = await extractImagesFromUrl(url);
+                
+                if (result.success) {
+                    displayResults(result.images);
+                } else {
+                    throw new Error(result.error || 'Error desconocido');
+                }
+                
+            } catch (error) {
+                console.error('Error al extraer imágenes:', error);
+                resultsContainer.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayResults(images) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (images.length === 0) {
+                resultsContainer.innerHTML = '<div class="error">No se encontraron imágenes en esta página</div>';
+                return;
+            }
+            
+            let html = `
+                <div class="results-header">
+                    <h3 class="results-title">📸 Imágenes Encontradas</h3>
+                    <div class="results-count">${images.length} imágenes</div>
+                </div>
+                <div class="images-grid">
+            `;
+            
+            images.forEach((image, index) => {
+                html += `
+                    <div class="image-card">
+                        <div class="image-container">
+                            <img src="${image.src}" 
+                                 class="image-thumb" 
+                                 alt="${image.alt}"
+                                 onclick="previewImage('${image.src}')"
+                                 title="${image.title || image.alt}">
+                        </div>
+                        <div class="image-info">
+                            <div class="image-name">${truncateText(image.alt, 40)}</div>
+                            <div class="image-size">${image.width} x ${image.height}</div>
+                            <button class="download-btn" 
+                                    onclick="downloadImage('${image.src}', '${index}')">
+                                💾 Descargar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            resultsContainer.innerHTML = html;
+        }
+        
+        function truncateText(text, maxLength) {
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        function previewImage(src) {
+            const overlay = document.createElement('div');
+            overlay.className = 'preview-overlay';
+            overlay.onclick = () => document.body.removeChild(overlay);
+            
+            const img = document.createElement('img');
+            img.className = 'preview-image';
+            img.src = src;
+            img.onclick = (e) => e.stopPropagation();
+            
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
+        }
+        
+        function downloadImage(src, filename = null) {
+            const link = document.createElement('a');
+            link.href = src;
+            link.download = filename || `imagen_${Date.now()}.jpg`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            
+            // Forzar descarga
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Mostrar mensaje de éxito
+            const resultsContainer = document.getElementById('resultsContainer');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = '✅ Imagen descargada correctamente';
+            resultsContainer.insertBefore(successDiv, resultsContainer.firstChild);
+            
+            setTimeout(() => {
+                if (successDiv.parentNode) {
+                    successDiv.parentNode.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+        
+        // Cargar ejemplo al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('urlInput').value = 'https://www.ebay.com/str/bluehaze?_trksid=p4429486.m3561.l161211';
+        });
+        
+        // Permitir extraer con Enter
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                extractImages();
+            }
+        });
+    </script>
+</body>
+</html>

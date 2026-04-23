@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>PELIS TINO - Listas M3U</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --bg-main: #020617;
+      --bg-card: #020617cc;
+      --bg-soft: #0b1120cc;
+      --accent: #f97316;
+      --accent-strong: #fb923c;
+      --text-main: #e5e7eb;
+      --text-soft: #9ca3af;
+      --text-muted: #6b7280;
+      --border-soft: #1f2937;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;}
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      background:var(--bg-main) url("https://d2u1z1lopyfwlx.cloudfront.net/thumbnails/4ab63b66-735d-540b-b343-96b6f06edeeb/6b5d82d0-df0d-5fb7-9d32-ae31b1651ada.jpg") center/cover fixed no-repeat;
+      color:var(--text-main);
+      padding:12px;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at top,#020617aa 0,#020617ee 55%);
+      z-index:-1;
+    }
+
+    .layout{
+      width:100%;
+      max-width:1300px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media(min-width:900px){
+      .layout{
+        grid-template-columns:220px minmax(0,1fr) 220px;
+        align-items:flex-start;
+      }
+    }
+
+    .page{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .page-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .logo-wrap{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .logo-circle{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#f97316,#fb923c);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:1.2rem;
+      color:#0b1120;
+      box-shadow:0 0 18px rgba(249,115,22,0.6);
+    }
+    .title-text{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+    .title-text h1{
+      font-size:1.9rem;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      color:#fef3c7;
+    }
+    @media(max-width:480px){
+      .title-text h1{
+        font-size:1.5rem;
+        letter-spacing:0.08em;
+      }
+    }
+    .title-text span{
+      font-size:0.85rem;
+      color:var(--text-soft);
+    }
+
+    .player-card{
+      background:var(--bg-card);
+      border-radius:18px;
+      border:1px solid var(--border-soft);
+      padding:12px;
+      backdrop-filter:blur(14px);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .player-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid #4b5563;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--text-soft);
+    }
+    .badge-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#22c55e;
+    }
+    .player-info h2{
+      margin:0 0 2px;
+      font-size:1.05rem;
+    }
+    .player-info p{
+      margin:0;
+      font-size:0.8rem;
+      color:var(--text-soft);
+    }
+
+    .player-wrapper{
+      border-radius:14px;
+      border:1px solid var(--border-soft);
+      overflow:hidden;
+      background:#000;
+      position:relative;
+    }
+    .player-aspect{
+      position:relative;
+      width:100%;
+      padding-top:56.25%;
+    }
+    .player-inner{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#000;
+    }
+    video{
+      width:100%;
+      height:100%;
+      border:0;
+      display:block;
+      background:#000;
+    }
+    .overlay-loading{
+      position:absolute;
+      inset:0;
+      background:rgba(15,23,42,0.78);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      font-size:0.82rem;
+      color:var(--text-soft);
+    }
+    .overlay-loading.active{display:flex;}
+    .overlay-error{
+      position:absolute;
+      inset:0;
+      background:rgba(15,23,42,0.95);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:12px;
+      font-size:0.8rem;
+    }
+    .overlay-error.active{display:flex;}
+    .fallback-link{
+      font-size:0.78rem;
+      margin-top:4px;
+      color:#93c5fd;
+      text-decoration:none;
+      display:inline-block;
+    }
+
+    .lists-panel{
+      border-radius:14px;
+      border:1px solid var(--border-soft);
+      padding:10px;
+      background:var(--bg-card);
+      font-size:0.82rem;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media(min-width:600px){
+      .lists-panel{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    @media(min-width:1000px){
+      .lists-panel{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+    .select-block{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    label{
+      font-size:0.82rem;
+      color:var(--text-main);
+    }
+    select{
+      width:100%;
+      padding:5px 8px;
+      border-radius:8px;
+      border:1px solid #4b5563;
+      background:#020617;
+      color:var(--text-main);
+      font-size:0.8rem;
+    }
+
+    .footer{
+      margin-top:4px;
+      font-size:0.9rem;
+      color:var(--text-muted);
+      text-align:center;
+    }
+
+    .ad-column{
+      background:var(--bg-card);
+      border-radius:18px;
+      border:1px solid var(--border-soft);
+      padding:8px;
+      backdrop-filter:blur(14px);
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    .ad-title{
+      font-size:0.8rem;
+      color:var(--accent-strong);
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+    }
+    .ad-slot{
+      width:100%;
+      max-width:260px;
+      aspect-ratio:9/16;
+      border-radius:10px;
+      overflow:hidden;
+      background:#020617;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+    }
+    .ad-slot img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .ad-loading{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:0.75rem;
+      color:var(--text-soft);
+      text-align:center;
+      padding:4px;
+    }
+
+    .buy-button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .wa-float{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      width:60px;
+      height:60px;
+      border-radius:50%;
+      background:#25d366;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 8px 18px rgba(0,0,0,0.5);
+      cursor:pointer;
+      z-index:999;
+    }
+    .wa-float svg{
+      width:32px;
+      height:32px;
+      fill:#ffffff;
+    }
+    .wa-tooltip{
+      position:fixed;
+      right:90px;
+      bottom:26px;
+      background:#0b1120;
+      color:#e5e7eb;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:0.75rem;
+      border:1px solid #1f2937;
+      box-shadow:0 8px 18px rgba(0,0,0,0.4);
+      display:none;
+    }
+    .wa-float:hover + .wa-tooltip{
+      display:block;
+    }
+
+    @media(max-width:480px){
+      body{
+        padding:8px;
+      }
+      .player-card{
+        padding:10px;
+      }
+      .ad-column{
+        padding:6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+  <aside class="ad-column">
+    <div class="ad-title">Publicidad</div>
+    <div class="ad-slot" id="adLeft">
+      <div class="ad-loading">Cargando publicidad...</div>
+    </div>
+    <button class="buy-button" id="buyButton">Comprar</button>
+  </aside>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="logo-wrap">
+        <div class="logo-circle">AP</div>
+        <div class="title-text">
+          <h1>PELIS TINO</h1>
+          <span>Player con múltiples listas M3U</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="player-card">
+      <div class="player-top">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          <span>Reproductor activo</span>
+        </div>
+        <div class="player-info">
+          <h2 id="currentLabel">Selecciona un canal o película</h2>
+          <p>Reproducción directa (MP4 / TS / M3U8)</p>
+        </div>
+      </div>
+
+      <div class="player-wrapper">
+        <div class="player-aspect">
+          <div class="player-inner" id="playerContainer"></div>
+          <div class="overlay-loading" id="loadingOverlay">Cargando...</div>
+          <div class="overlay-error" id="errorOverlay">
+            No se pudo reproducir este contenido. Prueba otro enlace.
+          </div>
+        </div>
+      </div>
+
+      <div class="lists-panel">
+        <!-- Lista 1 -->
+        <div class="select-block" id="blockList1">
+          <label for="selectComedia">Lista 1 - comedia1tv.m3u</label>
+          <select id="selectComedia">
+            <option value="">Cargando comedia1tv.m3u...</option>
+          </select>
+        </div>
+
+        <!-- Lista 2 -->
+        <div class="select-block" id="blockList2">
+          <label for="selectFullrow">Lista 2 - lista_fullrow.m3u</label>
+          <select id="selectFullrow">
+            <option value="">Cargando lista_fullrow.m3u...</option>
+          </select>
+        </div>
+
+        <!-- Lista 3 -->
+        <div class="select-block" id="blockList3">
+          <label for="selectOnline1">Lista 3 - lista-online (1).m3u</label>
+          <select id="selectOnline1">
+            <option value="">Cargando lista-online (1).m3u...</option>
+          </select>
+        </div>
+
+        <!-- Lista 4 (oculta) -->
+        <div class="select-block" id="blockList4">
+          <label for="selectOnline11">Lista 4 - lista-online (11).m3u</label>
+          <select id="selectOnline11">
+            <option value="">Cargando lista-online (11).m3u...</option>
+          </select>
+        </div>
+
+        <!-- Lista 5 (oculta) -->
+        <div class="select-block" id="blockList5">
+          <label for="selectOnline12">Lista 5 - lista-online (12).m3u</label>
+          <select id="selectOnline12">
+            <option value="">Cargando lista-online (12).m3u...</option>
+          </select>
+        </div>
+
+        <!-- Lista 6 (oculta) -->
+        <div class="select-block" id="blockList6">
+          <label for="selectOnline13">Lista 6 - lista-online (13).m3u</label>
+          <select id="selectOnline13">
+            <option value="">Cargando lista-online (13).m3u...</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span id="copyYear"></span> © A.Pizarro - Todos los derechos reservados.
+      </div>
+    </section>
+  </div>
+
+  <aside class="ad-column">
+    <div class="ad-title">Publicidad</div>
+    <div class="ad-slot" id="adRight">
+      <div class="ad-loading">Cargando publicidad...</div>
+    </div>
+  </aside>
+</div>
+
+<a class="wa-float"
+   href="https://wa.me/593967597240?text=M%C3%A1s%20informacion"
+   target="_blank"
+   rel="noopener noreferrer">
+  <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0 7.927 7.927 0 0 0 .064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93a7.9 7.9 0 0 0-2.327-5.607m-5.607 12.195a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326.84.326.904.129 1.246.08 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+  </svg>
+</a>
+<div class="wa-tooltip">WhatsApp: Más información</div>
+
+<script>
+/* ==== Configuración interna para admin ==== */
+const ENABLE_LIST_1 = true;
+const ENABLE_LIST_2 = true;
+const ENABLE_LIST_3 = true;
+const ENABLE_LIST_4 = false;
+const ENABLE_LIST_5 = false;
+const ENABLE_LIST_6 = false;
+
+/* ==== URLs de listas M3U ==== */
+const M3U_COMEDIA_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/comedia1tv.m3u";
+const M3U_FULLROW_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista_fullrow.m3u";
+const M3U_ONLINE1_URL   = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(1).m3u";
+const M3U_ONLINE11_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(11).m3u";
+const M3U_ONLINE12_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(12).m3u";
+const M3U_ONLINE13_URL  = "https://raw.githubusercontent.com/agustino8080/listam3u/refs/heads/main/lista-online%20(13).m3u";
+
+/* ==== DOM ==== */
+const playerContainer  = document.getElementById("playerContainer");
+const loadingOverlay   = document.getElementById("loadingOverlay");
+const errorOverlay     = document.getElementById("errorOverlay");
+const currentLabel     = document.getElementById("currentLabel");
+
+const blockList1 = document.getElementById("blockList1");
+const blockList2 = document.getElementById("blockList2");
+const blockList3 = document.getElementById("blockList3");
+const blockList4 = document.getElementById("blockList4");
+const blockList5 = document.getElementById("blockList5");
+const blockList6 = document.getElementById("blockList6");
+
+const selectComedia   = document.getElementById("selectComedia");
+const selectFullrow   = document.getElementById("selectFullrow");
+const selectOnline1   = document.getElementById("selectOnline1");
+const selectOnline11  = document.getElementById("selectOnline11");
+const selectOnline12  = document.getElementById("selectOnline12");
+const selectOnline13  = document.getElementById("selectOnline13");
+
+const copyYearEl = document.getElementById("copyYear");
+
+const adLeft  = document.getElementById("adLeft");
+const adRight = document.getElementById("adRight");
+
+let currentVideoEl   = null;
+let currentHlsInstance = null;
+
+/* ==== Player principal ==== */
+function showLoading(on){ loadingOverlay.classList.toggle("active",on); }
+function showError(on){ errorOverlay.classList.toggle("active",on); }
+
+function clearPlayer(){
+  if(currentHlsInstance){
+    currentHlsInstance.destroy();
+    currentHlsInstance=null;
+  }
+  if(currentVideoEl){
+    try{ currentVideoEl.src=""; }catch(e){}
+  }
+  playerContainer.innerHTML="";
+}
+
+function createBaseVideo(){
+  const wrapper=document.createElement("div");
+  wrapper.style.width="100%";
+  wrapper.style.height="100%";
+
+  const video=document.createElement("video");
+  video.controls=true;
+  video.autoplay=true;
+  video.style.width="100%";
+  video.style.height="100%";
+  video.style.background="#000";
+
+  wrapper.appendChild(video);
+  currentVideoEl=video;
+
+  return wrapper;
+}
+
+function loadDirectVideo(url,labelText){
+  clearPlayer();
+  if(!url) return;
+
+  showLoading(true);
+  showError(false);
+  currentLabel.textContent = labelText || url;
+
+  const wrapper=createBaseVideo();
+  const video=currentVideoEl;
+  video.src=url;
+
+  video.addEventListener("loadeddata",()=>{
+    showLoading(false);
+    showError(false);
+    video.play().catch(()=>{});
+  });
+
+  video.addEventListener("error",()=>{
+    showLoading(false);
+    showError(true);
+  });
+
+  const a=document.createElement("a");
+  a.href=url;
+  a.target="_blank";
+  a.rel="noopener noreferrer";
+  a.textContent="Abrir directamente / Descargar este stream";
+  a.className="fallback-link";
+  wrapper.appendChild(a);
+
+  playerContainer.appendChild(wrapper);
+}
+
+function parseM3U(text){
+  const lines=text.split(/\r?\n/);
+  const items=[];
+  let currentTitle=null;
+
+  for(let line of lines){
+    line=line.trim();
+    if(!line) continue;
+
+    if(line.startsWith("#EXTINF")){
+      const commaIndex=line.indexOf(",");
+      if(commaIndex!==-1){
+        currentTitle=line.substring(commaIndex+1).trim();
+      }else{
+        currentTitle=line;
+      }
+    }else if(!line.startsWith("#") && currentTitle){
+      const url=line;
+      items.push({ title:currentTitle, url });
+      currentTitle=null;
+    }
+  }
+  return items;
+}
+
+async function loadM3UintoSelect(url, selectEl, label){
+  try {
+    selectEl.innerHTML = `<option value="">Cargando ${label}...</option>`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Error en la respuesta de la red");
+    const text = await res.text();
+    const items = parseM3U(text);
+
+    if (!items.length) {
+      selectEl.innerHTML = `<option value="">Sin entradas en ${label}</option>`;
+      return;
+    }
+
+    selectEl.innerHTML = `<option value="">-- Selecciona desde ${label} --</option>`;
+    items.forEach(it => {
+      const opt = document.createElement("option");
+      opt.value = it.url;
+      opt.textContent = it.title;
+      selectEl.appendChild(opt);
+    });
+  } catch (e) {
+    console.error("Error cargando", label, e);
+    selectEl.innerHTML = `<option value="">Error al cargar ${label}</option>`;
+  }
+}
+
+/* ==== Eventos listas ==== */
+selectComedia.addEventListener("change",()=>{
+  const url = selectComedia.value;
+  if(!url) return;
+  const label = "comedia1tv.m3u: " + selectComedia.options[selectComedia.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectFullrow.addEventListener("change",()=>{
+  const url = selectFullrow.value;
+  if(!url) return;
+  const label = "lista_fullrow.m3u: " + selectFullrow.options[selectFullrow.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectOnline1.addEventListener("change",()=>{
+  const url = selectOnline1.value;
+  if(!url) return;
+  const label = "lista-online (1).m3u: " + selectOnline1.options[selectOnline1.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectOnline11.addEventListener("change",()=>{
+  const url = selectOnline11.value;
+  if(!url) return;
+  const label = "lista-online (11).m3u: " + selectOnline11.options[selectOnline11.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectOnline12.addEventListener("change",()=>{
+  const url = selectOnline12.value;
+  if(!url) return;
+  const label = "lista-online (12).m3u: " + selectOnline12.options[selectOnline12.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+selectOnline13.addEventListener("change",()=>{
+  const url = selectOnline13.value;
+  if(!url) return;
+  const label = "lista-online (13).m3u: " + selectOnline13.options[selectOnline13.selectedIndex].textContent;
+  loadDirectVideo(url,label);
+});
+
+/* ==== Publicidad: imágenes izquierda y derecha ==== */
+const ADS_IMAGES = [
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/dayready-tracktop-white-jn6491-000-plp-model-e6264e43.jpg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/essentials-fleece-3-stripes-hoodie-6b097100.jpg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/fleece-hoodie-a52a69c6.jpg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/hombre-ropa-puma-gris-1.jpeg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/hombre-ropa-puma-negro-1.png",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/lumoo-vto-01f42828-c1ba-45b7-928f-5567254d60e9.png",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/lumoo-vto-795cabaa-de5c-4438-a102-ac5254596738.png",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/lumoo-vto-7d1b1f12-39d4-4b73-99f8-d851ac35d8f9.png",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/lumoo-vto-f292fb29-6fc1-4e0a-b2b7-2c34e427738e.png",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/zapatos-adidas-advantage-ebdcee1f.jpg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/leggings-yoga-flex-da7a0e8b.jpg",
+  "https://ventasonline.kesug.com/PRODUCTO/IMAGENES_/leggings-yoga-flex-fa702362.jpg"
+];
+
+function setupImageSlider(container){
+  if (!ADS_IMAGES.length) {
+    container.innerHTML = "<div class='ad-loading'>Sin imágenes</div>";
+    return;
+  }
+  container.innerHTML = "";
+  let index = 0;
+  const img = document.createElement("img");
+  img.src = ADS_IMAGES[index];
+  img.alt = "Publicidad";
+  container.appendChild(img);
+
+  setInterval(() => {
+    index = (index + 1) % ADS_IMAGES.length;
+    img.src = ADS_IMAGES[index];
+  }, 10000); // 10s
+}
+
+/* ==== INIT ==== */
+async function init(){
+  // Mostrar/ocultar listas según flags internos
+  blockList1.style.display = ENABLE_LIST_1 ? "block" : "none";
+  blockList2.style.display = ENABLE_LIST_2 ? "block" : "none";
+  blockList3.style.display = ENABLE_LIST_3 ? "block" : "none";
+  blockList4.style.display = ENABLE_LIST_4 ? "block" : "none";
+  blockList5.style.display = ENABLE_LIST_5 ? "block" : "none";
+  blockList6.style.display = ENABLE_LIST_6 ? "block" : "none";
+
+  const y = new Date().getFullYear();
+  copyYearEl.textContent = "2026" + (y > 2026 ? "–" + y : "");
+
+  const loadTasks = [];
+  if (ENABLE_LIST_1) loadTasks.push(loadM3UintoSelect(M3U_COMEDIA_URL,  selectComedia,  "comedia1tv.m3u"));
+  if (ENABLE_LIST_2) loadTasks.push(loadM3UintoSelect(M3U_FULLROW_URL,  selectFullrow,  "lista_fullrow.m3u"));
+  if (ENABLE_LIST_3) loadTasks.push(loadM3UintoSelect(M3U_ONLINE1_URL,  selectOnline1,  "lista-online (1).m3u"));
+  if (ENABLE_LIST_4) loadTasks.push(loadM3UintoSelect(M3U_ONLINE11_URL, selectOnline11, "lista-online (11).m3u"));
+  if (ENABLE_LIST_5) loadTasks.push(loadM3UintoSelect(M3U_ONLINE12_URL, selectOnline12, "lista-online (12).m3u"));
+  if (ENABLE_LIST_6) loadTasks.push(loadM3UintoSelect(M3U_ONLINE13_URL, selectOnline13, "lista-online (13).m3u"));
+
+  await Promise.all(loadTasks);
+
+  setupImageSlider(adLeft);
+  setupImageSlider(adRight);
+}
+
+// Botón “Comprar”
+document.getElementById("buyButton").addEventListener("click", () => {
+  const whatsappMessage = "Estoy interesado en comprar. ¿Podrías darme más información?";
+  const whatsappUrl = `https://wa.me/593967597240?text=${encodeURIComponent(whatsappMessage)}`;
+  window.open(whatsappUrl, "_blank");
+});
+
+document.addEventListener("DOMContentLoaded",init);
+</script>
+
+</body>
+</html>
